@@ -1,0 +1,43 @@
+#!/bin/bash -x
+#
+# Since there is no fetch hooks, and we don't want to complicate
+# this more than necessary, we use throw disk space and cpu at it.
+#
+# Two stages: a bare copy that we mirror into, and then a separate
+# local copy that we push to to get the hooks running as expected.
+#
+# Time will tell if this is a good idea or not. I don't fancy parsing
+# stuff in .git by myself.
+#
+
+#set -x
+#set -e
+
+FETCHNAME=varnish-cache.in
+BARE=varnish-cache.out
+
+if [ ! -d "$FETCHNAME" ]; then
+	#git clone --mirror git@github.com:varnishcache/varnish-cache.git $FETCHNAME
+	git clone --mirror ./localorig $FETCHNAME
+fi
+GIT_DIR=varnish-cache.in git fetch --quiet --all
+
+if [ ! -d "$BARE" ]; then
+	git init --bare $BARE
+	GIT_DIR=$FETCHNAME git remote add local $BARE
+	# Initial push to avoid heaps of notification messages on reset.
+	GIT_DIR=$FETCHNAME git push --quiet --mirror local
+
+	GIT_DIR=$BARE git config --local --add hooks.mailinglist lkarsten@varnish-software.com
+	ln -sf ../../hooks/send-email $BARE/hooks/post-receive
+fi
+
+# Insert a single fresh commit that should be emailed.
+if [ "x" = "x" ]; then
+	cd onechange
+	git push --quiet origin
+	cd ..
+fi
+
+# This should trigger post-receive hooks on the BARE repo.
+GIT_DIR=$FETCHNAME git push --quiet --mirror local

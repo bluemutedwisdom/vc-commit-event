@@ -1,0 +1,53 @@
+#! /bin/sh
+
+set -e
+
+COMMITS=""
+BRANCHES=""
+
+# We're run from a hook, unset GIT_DIR so we can clone and such without trouble.
+ORIG_GIT_DIR="$(cd "$GIT_DIR"; pwd)"
+unset GIT_DIR
+
+while read oldrev newrev refname; do
+    for rev in $(git rev-list $oldrev..$newrev); do
+	if ! git diff-tree --exit-code  --name-only "$rev" -- doc/sphinx man; then
+	    COMMITS="$COMMITS $rev"
+	fi
+    done
+done
+
+for C in $COMMITS; do
+    b=$(git branch --contains "$C" | sed 's/^..//')
+    case "$BRANCHES" in
+	*$b*)
+	# Do nothing, already there
+	:
+	;;
+	*)
+	    BRANCHES="$b $BRANCHES"
+    esac
+done
+if [ -z "$BRANCHES" ]; then
+    exit 0
+fi
+
+for B in $BRANCHES; do
+    DIR=$(mktemp -d)
+    TODIR="/srv/varnish-cache.org/www/docs/$B"
+    BUILDDIR="build"
+    [ "$B" = "3.0" ] && BUILDDIR="=build"
+
+    cd "$DIR"
+    git clone "$ORIG_GIT_DIR"
+    cd varnish-cache
+    git checkout "$B"
+    ./autogen.sh
+    ./configure
+    make -j 4
+    make -C doc/sphinx html
+    rsync -av --delete doc/sphinx/$BUILDDIR/html/ "$TODIR"
+    cd /
+    rm -rf "$DIR"
+done
+
