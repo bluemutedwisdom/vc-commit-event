@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 # Since there is no fetch hooks, and we don't want to complicate
 # this more than necessary, we use throw disk space and cpu at it.
@@ -9,18 +9,19 @@
 # Time will tell if this is a good idea or not. I don't fancy parsing
 # stuff in .git by myself.
 #
+# Author: Lasse Karstensen <lkarsten@varnish-software.com>, March 2016.
 
-#set -x
-#set -e
 
-FETCHNAME=varnish-cache.in
-BARE=varnish-cache.out
+FETCHNAME=tmp.git
+BARE=bare.git
 
 if [ ! -d "$FETCHNAME" ]; then
-	#git clone --mirror git@github.com:varnishcache/varnish-cache.git $FETCHNAME
-	git clone --mirror ./localorig $FETCHNAME
+	git clone --mirror git@github.com:varnishcache/varnish-cache.git $FETCHNAME
+	# When testing this, avoid waiting for github over and over again.
+	#git clone --mirror git@github.com:varnishcache/varnish-cache.git localorig
+	#git clone --mirror ./localorig $FETCHNAME
 fi
-GIT_DIR=varnish-cache.in git fetch --quiet --all
+GIT_DIR=$FETCHNAME git fetch --quiet --all
 
 if [ ! -d "$BARE" ]; then
 	git init --bare $BARE
@@ -29,11 +30,13 @@ if [ ! -d "$BARE" ]; then
 	GIT_DIR=$FETCHNAME git push --quiet --mirror local
 
 	GIT_DIR=$BARE git config --local --add hooks.mailinglist lkarsten@varnish-software.com
+
+	# Enable the hook inside the bare repo.
 	ln -sf ../../hooks/send-email $BARE/hooks/post-receive
 fi
 
 # Insert a single fresh commit that should be emailed.
-if [ "x" = "x" ]; then
+if [ "x" = "no" ]; then
 	cd onechange
 	git push --quiet origin
 	cd ..
