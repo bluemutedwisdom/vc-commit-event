@@ -16,7 +16,7 @@ FETCHNAME=tmp.git
 BARE=bare.git
 
 if [ ! -d "$FETCHNAME" ]; then
-	git clone --mirror git@github.com:varnishcache/varnish-cache.git $FETCHNAME
+	git clone --mirror https://github.com/varnishcache/varnish-cache.git $FETCHNAME
 	# When testing this, avoid waiting for github over and over again.
 	#git clone --mirror git@github.com:varnishcache/varnish-cache.git localorig
 	#git clone --mirror ./localorig $FETCHNAME
@@ -36,7 +36,7 @@ if [ ! -d "$BARE" ]; then
 fi
 
 # Insert a single fresh commit that should be emailed.
-if [ "x" = "no" ]; then
+if [ "nox" = "x" ]; then
 	cd onechange
 	git push --quiet origin
 	cd ..
