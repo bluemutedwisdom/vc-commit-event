@@ -1,24 +1,34 @@
-Varnish Cache commit emails
+Varnish Cache commit events
 ===========================
 
-This is a tiny script meant to be run under crontab on
-some unprivileged user.
 
-It will fetch the latest git commits and use the normal git post-receive hook
-we used when we self-hosted git, for notifying the -commit@ email list.
+This is a tiny script that pulls the latest git
+changes from `varnish-cache.git`, and runs some commit hooks.
+
+Currently it just runs the one we need: send-email in general direction of the
+varnish-commit@.
+
+It is meant to be run under crontab with no privileges somewhere that
+is capable and allowed to send email.
+
 
 
 FAQ
 ---
 
-Q: Why not use the built-in stuff in github?
+Q: Why not use the built-in commit email on Github?
+A: It doesn't contain the diff, so it isn't very useful for us.
 
-A: It doesn't contain the diff. That stuff is just a traffic generator for the
-github web site.
+Q: Why not use webhooks and $shinyshinyshiny?
+A: These emails are not urgent. We can wait 2.5 minutes for the cronjob to run.
+The upside is that we don't have anything that needs to be running constantly.
+If this breaks someone gets a lot of cronmail, but when it is fixed the emails
+should pick up where they left off. No lost messages.
 
 
 Contact
 -------
 
-Contact varnish-core@varnNOSPAMish-cache.org about this script.
+This was written by Lasse Karstensen <lkarsten@varniNOSPAMsh-software.com> and is
+maintained by the Varnish core team. Contact address is <varnish-dev@varnNOSPAMish-cache.org>.
 
