@@ -18,6 +18,13 @@ recipients=$(git config hooks.mailinglist)
 PATH=$PATH:/usr/lib/
 echo "INFO: $0 running .."
 while read oldrev newrev refname; do
+    if [[ $refname == refs/remotes* ]]; then
+        continue
+    fi
+    if [[ $refname == refs/pull* ]]; then
+        continue
+    fi
+
     if [ -z "$(git rev-list $newrev..$oldrev)" ]; then
 	# Fast forward, print out a mail per commit
 	for rev in $(git rev-list $oldrev..$newrev | tac); do
