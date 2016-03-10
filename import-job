@@ -29,7 +29,8 @@ if [ ! -d "$BARE" ]; then
 	# Initial push to avoid heaps of notification messages on reset.
 	GIT_DIR=$FETCHNAME git push --quiet --mirror local
 
-	GIT_DIR=$BARE git config --local --add hooks.mailinglist lkarsten@varnish-software.com
+	#GIT_DIR=$BARE git config --local --add hooks.mailinglist lkarsten@varnish-software.com
+	GIT_DIR=$BARE git config --local --add hooks.mailinglist varnish-commit@varnish-cache.org
 
 	# Enable the hook inside the bare repo.
 	ln -sf ../../hooks/send-email $BARE/hooks/post-receive
