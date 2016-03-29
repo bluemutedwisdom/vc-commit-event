@@ -16,7 +16,6 @@ recipients=$(git config hooks.mailinglist)
 
 # For /usr/lib/sendmail
 PATH=$PATH:/usr/lib/
-echo "INFO: $0 running .."
 while read oldrev newrev refname; do
     if [[ $refname == refs/remotes* ]]; then
         continue
